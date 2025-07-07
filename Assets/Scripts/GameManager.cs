@@ -5,22 +5,32 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance;
+    private void Awake() => instance = this;
+
     public Data data;
-    public UpgradeManager upgradeManager;
 
     [SerializeField] private TMP_Text totalChipsText;
     [SerializeField] private TMP_Text chipsPerClickText;
 
     [SerializeField] AudioSource singleChip;
 
-    public double ChipsPerClick() => 1 + data.clickUpgradeLevel;
+    public double ChipsPerClick()
+    {
+        double total = 1;
+        for (int i = 0; i < data.clickUpgradeLevel.Count; i++)
+        {
+            total += UpgradeManager.instance.clickUpgradeBasePow[i] * data.clickUpgradeLevel[i];
+        }
+        
+        return total;
+    }
 
     private void Start()
     {
         data = new Data();
-        data.chips = 1;
 
-        upgradeManager.StartUpgradeManager();
+        UpgradeManager.instance.StartUpgradeManager();
     }
 
     private void Update()
@@ -33,6 +43,6 @@ public class GameManager : MonoBehaviour
     {
         data.chips += ChipsPerClick();
         singleChip.PlayOneShot(singleChip.clip);
-        upgradeManager.UpdateClickUpgradeUI();
+        UpgradeManager.instance.UpdateClickUpgradeUI();
     }
 }

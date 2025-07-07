@@ -1,47 +1,79 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UpgradeManager : MonoBehaviour
 {
-    public GameManager gameManager;
+    public static UpgradeManager instance;
+    public void Awake() => instance = this;
 
-    public Upgrades clickUpgrade;
+    public List<Upgrades> clickUpgrades;
+    public Upgrades clickUpgradePrefab;
 
-    public string clickUpgradeName;
+    public ScrollRect clickUpgradeScroll;
+    public Transform clickUpgradePanel;
 
-    public double clickUpgradeBaseCost;
-    public double clickUpgradeCostMult;
+    public string[] clickUpgradeNames;
+
+    public double[] clickUpgradeBaseCost;
+    public double[] clickUpgradeCostMult;
+    public double[] clickUpgradeBasePow;
 
     public void StartUpgradeManager()
     {
-        clickUpgradeName = "Chips Per Click";
-        clickUpgradeBaseCost = 100;
-        clickUpgradeCostMult = 1.6;
+        MethodManager.UpgradeCheck(ref GameManager.instance.data.clickUpgradeLevel, 5);
+        clickUpgradeNames    = new[] { "Chips Per Click +1", "Chips Per Click +5", "Chips Per Click +20", "Chips Per Click +50", "Chips Per Click +100" };
+        clickUpgradeBaseCost = new double[] { 50, 100, 500, 2500, 10000 };
+        clickUpgradeCostMult = new double[] { 1.9, 1.8, 1.75, 1.6, 1.55 };
+        clickUpgradeBasePow  = new double[] { 1, 5, 20, 50, 100 };
+
+        for (int i = 0; i < GameManager.instance.data.clickUpgradeLevel.Count; i++)
+        {
+            Upgrades upgrade = Instantiate(clickUpgradePrefab, clickUpgradePanel);
+            upgrade.upgradeID = i;
+            clickUpgrades.Add(upgrade);
+        }
+        clickUpgradeScroll.normalizedPosition = new Vector2 (0, 0);
         UpdateClickUpgradeUI();
     }
 
-    public void UpdateClickUpgradeUI()
+    public void UpdateClickUpgradeUI(int upgradeID = -1)
     {
-        clickUpgrade.levelText.text = gameManager.data.clickUpgradeLevel.ToString();
-        clickUpgrade.costText.text = "Cost: " + Cost().ToString(format: "F0") + " Flasks";
-        clickUpgrade.nameText.text = "+1 " + clickUpgradeName;
+        var data = GameManager.instance.data;
+        if(upgradeID == -1)
+        {
+            for(int i = 0; i < clickUpgrades.Count; i++)
+            {
+                UpdateUI(i);
+            }
+        }
+        else
+        {
+            UpdateUI(upgradeID);
+        }
+        
 
-        double chips = gameManager.data.chips;
-        double cost = Cost();
-        float fill = Mathf.Clamp01((float)((cost - chips) / cost));
-        clickUpgrade.fillImage.fillAmount = fill;
+        void UpdateUI(int iD)
+        {
+            clickUpgrades[iD].levelText.text = data.clickUpgradeLevel[iD].ToString();
+            clickUpgrades[iD].costText.text = $"Cost: {ClickUpgradeCost(iD):F2} Chips";
+            clickUpgrades[iD].nameText.text = clickUpgradeNames[iD];
+        }
     }
 
-    public double Cost() => clickUpgradeBaseCost * Math.Pow(clickUpgradeCostMult, gameManager.data.clickUpgradeLevel);
+    public double ClickUpgradeCost(int upgradeID) => clickUpgradeBaseCost[upgradeID] 
+                                                  * Math.Pow(clickUpgradeCostMult[upgradeID], GameManager.instance.data.clickUpgradeLevel[upgradeID]);
 
-    public void BuyUpgrade()
+    public void BuyUpgrade(int upgradeID)
     {
-        if(gameManager.data.chips >= Cost())
+        var data = GameManager.instance.data;
+        if(data.chips >= ClickUpgradeCost(upgradeID))
         {
-            gameManager.data.chips -= Cost();
-            gameManager.data.clickUpgradeLevel += 1;
+            data.chips -= ClickUpgradeCost(upgradeID);
+            data.clickUpgradeLevel[upgradeID] += 1;
         }
 
         UpdateClickUpgradeUI();

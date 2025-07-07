@@ -5,12 +5,12 @@ public class Data
 {
     public double chips;
 
-    public double clickUpgradeLevel;
+    public List<double> clickUpgradeLevel;
     
     public Data()
     {
         chips = 0;
 
-        clickUpgradeLevel = 0;
+        clickUpgradeLevel = MethodManager.CreateList<double>(capacity: 5);
     }
 }

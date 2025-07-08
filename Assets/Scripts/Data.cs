@@ -1,16 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Data
 {
     public double chips;
 
-    public List<double> clickUpgradeLevel;
+    public List<int> clickUpgradeLevel;
+    public List<int> autoGenUpgradeLevel;
     
     public Data()
     {
         chips = 0;
 
-        clickUpgradeLevel = MethodManager.CreateList<double>(capacity: 5);
+        clickUpgradeLevel = new int[5].ToList();
+        autoGenUpgradeLevel = new int[5].ToList();
     }
 }

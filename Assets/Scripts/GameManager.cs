@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     public Data data;
 
     [SerializeField] private TMP_Text totalChipsText;
+    [SerializeField] private TMP_Text chipsPerSecond;
     [SerializeField] private TMP_Text chipsPerClickText;
 
     [SerializeField] AudioSource singleChip;
@@ -26,6 +27,17 @@ public class GameManager : MonoBehaviour
         return total;
     }
 
+    public double ChipsPerSecond()
+    {
+        double total = 0;
+        for (int i = 0; i < data.autoGenUpgradeLevel.Count; i++)
+        {
+            total += UpgradeManager.instance.autoGenUpgradeBasePow[i] * data.autoGenUpgradeLevel[i];
+        }
+
+        return total;
+    }
+
     private void Start()
     {
         data = new Data();
@@ -35,14 +47,16 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        totalChipsText.text = "Chips: " + data.chips;
+        totalChipsText.text    = $"{data.chips:F0}";
+        chipsPerSecond.text    = $"{ChipsPerSecond():F2}/s";
         chipsPerClickText.text = "$" + ChipsPerClick();
+
+        data.chips += ChipsPerSecond() * Time.deltaTime;
     }
 
     public void increase_chips()
     {
         data.chips += ChipsPerClick();
         singleChip.PlayOneShot(singleChip.clip);
-        UpgradeManager.instance.UpdateClickUpgradeUI();
     }
 }

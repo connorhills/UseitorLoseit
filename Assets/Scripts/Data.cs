@@ -13,7 +13,7 @@ public class Data
     {
         chips = 0;
 
-        clickUpgradeLevel = new int[5].ToList();
-        autoGenUpgradeLevel = new int[5].ToList();
+        clickUpgradeLevel = new int[8].ToList();
+        autoGenUpgradeLevel = new int[11].ToList();
     }
 }

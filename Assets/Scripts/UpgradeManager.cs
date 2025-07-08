@@ -22,6 +22,7 @@ public class UpgradeManager : MonoBehaviour
     public double[] clickUpgradeBaseCost;
     public double[] clickUpgradeCostMult;
     public double[] clickUpgradeBasePow;
+    public double[] clickUpgradesUnlocked;
 
     [Header("Auto Gen Upgrade Data")]
     public List<Upgrades> autoGenUpgrades;
@@ -35,36 +36,41 @@ public class UpgradeManager : MonoBehaviour
     public double[] autoGenUpgradeBaseCost;
     public double[] autoGenUpgradeCostMult;
     public double[] autoGenUpgradeBasePow;
+    public double[] autoGenUpgradesUnlocked;
 
     public void StartUpgradeManager()
     {
-        MethodManager.UpgradeCheck(GameManager.instance.data.clickUpgradeLevel, 5);
-        clickUpgradeNames    = new[] { "Chips Per Click +1", 
-                                       "Chips Per Click +10", 
-                                       "Chips Per Click +20", 
-                                       "Chips Per Click +50", 
-                                       "Chips Per Click +100" 
-                                     };
-        autoGenUpgradeNames  = new[] {
-                                        "+1 Chips/s",
-                                        "+5 Chips/s",
-                                        "+10 Chips/s",
-                                        "+25 Chips/s",
-                                        "+50 Chips/s",
-                                     };
+        MethodManager.UpgradeCheck(GameManager.instance.data.clickUpgradeLevel, 8);
 
-        clickUpgradeBaseCost = new double[] { 1000, 10000, 50000, 100000, 1000000 };
-        clickUpgradeCostMult = new double[] { 1.9, 1.8, 1.75, 1.6, 1.55 };
-        clickUpgradeBasePow  = new double[] { 1, 10, 20, 50, 100 };
+        clickUpgradeBasePow = new double[] { 1, 10, 20, 50, 100, 250, 500, 1000 };
+        clickUpgradeNames = new string[clickUpgradeBasePow.Length];
+        for (int i = 0; i < clickUpgradeBasePow.Length; i++)
+        {
+            clickUpgradeNames[i] = $"Chips per Click +{clickUpgradeBasePow[i]}";
+        }
 
-        autoGenUpgradeBaseCost = new double[] { 25, 100, 500, 1000, 10000 };
-        autoGenUpgradeCostMult = new double[] { 1.15, 1.25, 1.35, 1.45, 1.6 };
-        autoGenUpgradeBasePow  = new double[] { 1, 5, 10, 25, 50 };
+        clickUpgradeBaseCost  = new double[] { 1000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000 };
+        clickUpgradeCostMult  = new double[] { 1.4, 1.42, 1.45, 1.38, 1.4, 1.39, 1.43, 1.41 };
+        clickUpgradesUnlocked = new double[] { 0, 1000, 10000, 25000, 50000, 100000, 250000, 500000 };
+
+
+        autoGenUpgradeBasePow = new double[] { 1, 5, 10, 20, 35, 50, 100, 250, 400, 1000, 5000, 10000};
+        autoGenUpgradeNames = new string[autoGenUpgradeBasePow.Length];
+        for (int i = 0; i < autoGenUpgradeBasePow.Length; i++)
+        {
+            autoGenUpgradeNames[i] = $"+{autoGenUpgradeBasePow[i]} Chips/s";
+        }
+
+        autoGenUpgradeBaseCost  = new double[] { 50, 100, 750, 1500, 5000, 12500, 23500, 55000, 115000, 225000, 545000, 1000000 };
+        autoGenUpgradeCostMult  = new double[] { 1.35, 1.38, 1.45, 1.43, 1.41, 1.4, 1.39, 1.38, 1.37, 1.36, 1.35, 1.35 };
+        autoGenUpgradesUnlocked = new double[] { 0, 50, 100, 750, 1500, 5000, 12500, 23500, 55000, 115000, 225000, 545000 };
+
 
         for (int i = 0; i < GameManager.instance.data.clickUpgradeLevel.Count; i++)
         {
             Upgrades upgrade = Instantiate(clickUpgradePrefab, clickUpgradePanel);
             upgrade.upgradeID = i;
+            upgrade.gameObject.SetActive(false);
             clickUpgrades.Add(upgrade);
         }
 
@@ -72,12 +78,32 @@ public class UpgradeManager : MonoBehaviour
         {
             Upgrades upgrade = Instantiate(autoGenUpgradePrefab, autoGenUpgradePanel);
             upgrade.upgradeID = i;
+            upgrade.gameObject.SetActive(false);
             autoGenUpgrades.Add(upgrade);
         }
         clickUpgradeScroll.normalizedPosition = new Vector2(0, 0);
         autoGenUpgradeScroll.normalizedPosition = new Vector2(0, 0);
         UpdateUpgradeUI("click");
         UpdateUpgradeUI("autoGen");
+    }
+
+    public void Update()
+    {
+        for (var i = 0; i < clickUpgrades.Count; i++)
+        {
+            if (!clickUpgrades[i].gameObject.activeSelf)
+            {
+                clickUpgrades[i].gameObject.SetActive(GameManager.instance.data.chips >= clickUpgradesUnlocked[i]);
+            }
+        }
+
+        for (var i = 0; i < autoGenUpgrades.Count; i++)
+        {
+            if (!autoGenUpgrades[i].gameObject.activeSelf)
+            {
+                autoGenUpgrades[i].gameObject.SetActive(GameManager.instance.data.chips >= autoGenUpgradesUnlocked[i]);
+            }
+        }
     }
 
     public void UpdateUpgradeUI(string type, int upgradeID = -1)

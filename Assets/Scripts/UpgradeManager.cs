@@ -40,7 +40,7 @@ public class UpgradeManager : MonoBehaviour
     {
         MethodManager.UpgradeCheck(GameManager.instance.data.clickUpgradeLevel, 5);
         clickUpgradeNames    = new[] { "Chips Per Click +1", 
-                                       "Chips Per Click +5", 
+                                       "Chips Per Click +10", 
                                        "Chips Per Click +20", 
                                        "Chips Per Click +50", 
                                        "Chips Per Click +100" 
@@ -53,12 +53,12 @@ public class UpgradeManager : MonoBehaviour
                                         "+50 Chips/s",
                                      };
 
-        clickUpgradeBaseCost = new double[] { 50, 100, 500, 2500, 10000 };
+        clickUpgradeBaseCost = new double[] { 1000, 10000, 50000, 100000, 1000000 };
         clickUpgradeCostMult = new double[] { 1.9, 1.8, 1.75, 1.6, 1.55 };
-        clickUpgradeBasePow  = new double[] { 1, 5, 20, 50, 100 };
+        clickUpgradeBasePow  = new double[] { 1, 10, 20, 50, 100 };
 
         autoGenUpgradeBaseCost = new double[] { 25, 100, 500, 1000, 10000 };
-        autoGenUpgradeCostMult = new double[] { 2.25, 2, 1.8, 1.7, 1.6 };
+        autoGenUpgradeCostMult = new double[] { 1.15, 1.25, 1.35, 1.45, 1.6 };
         autoGenUpgradeBasePow  = new double[] { 1, 5, 10, 25, 50 };
 
         for (int i = 0; i < GameManager.instance.data.clickUpgradeLevel.Count; i++)

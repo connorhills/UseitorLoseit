@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -21,7 +22,7 @@ public class GameManager : MonoBehaviour
         double total = 1;
         for (int i = 0; i < data.clickUpgradeLevel.Count; i++)
         {
-            total += UpgradeManager.instance.clickUpgradeBasePow[i] * data.clickUpgradeLevel[i];
+            total *= (data.clickUpgradeLevel[i] > 0) ? Math.Pow(2, data.clickUpgradeLevel[i]) : 1;
         }
         
         return total;

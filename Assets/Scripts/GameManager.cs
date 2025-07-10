@@ -19,14 +19,39 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private RectTransform chipButton;
 
-    public double ChipsPerClick()
+    public double critMultiplier = 100.0;
+
+    public double BaseChipsPerClick()
     {
         double total = 1;
         for (int i = 0; i < data.clickUpgradeLevel.Count; i++)
         {
             total *= (data.clickUpgradeLevel[i] > 0) ? Math.Pow(2, data.clickUpgradeLevel[i]) : 1;
         }
+        return total;
+    }
+
+    public double ChipsPerClick()
+    {
+        double total = BaseChipsPerClick();
+
+        if(UnityEngine.Random.value < TotalCritChance())
+        {
+            total *= critMultiplier;
+            Debug.Log($"hit {total}");
+        }
         
+        return total;
+    }
+
+    public double TotalCritChance()
+    {
+        double total = 0;
+        for (int i = 0; i < data.critChanceUpgradeLevel.Count; i++)
+        {
+            if (data.critChanceUpgradeLevel[i] > 0)
+                total += UpgradeManager.instance.critChanceUpgradeBasePow[i];
+        }
         return total;
     }
 
@@ -52,7 +77,7 @@ public class GameManager : MonoBehaviour
     {
         totalChipsText.text    = $"{data.chips:F2}";
         chipsPerSecond.text    = $"{ChipsPerSecond():F2}/s";
-        chipsPerClickText.text = "$" + ChipsPerClick();
+        chipsPerClickText.text = "$" + BaseChipsPerClick();
 
         data.chips += ChipsPerSecond() * Time.deltaTime;
     }

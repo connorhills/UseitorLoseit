@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] AudioSource singleChip;
 
+    [SerializeField] private RectTransform chipButton;
+
     public double ChipsPerClick()
     {
         double total = 1;
@@ -48,7 +50,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        totalChipsText.text    = $"{data.chips:F0}";
+        totalChipsText.text    = $"{data.chips:F2}";
         chipsPerSecond.text    = $"{ChipsPerSecond():F2}/s";
         chipsPerClickText.text = "$" + ChipsPerClick();
 
@@ -57,7 +59,8 @@ public class GameManager : MonoBehaviour
 
     public void increase_chips()
     {
-        data.chips += ChipsPerClick();
+        float randomMultiplier = UnityEngine.Random.Range(0.5f, 1.5f);
+        data.chips += ChipsPerClick() * randomMultiplier;
         singleChip.PlayOneShot(singleChip.clip);
     }
 }

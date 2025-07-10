@@ -12,7 +12,7 @@ public class UpgradeManager : MonoBehaviour
 
     [Header("Click Upgrade Data")]
     public List<Upgrades> clickUpgrades;
-    public Upgrades clickUpgradePrefab;
+    public Upgrades[] clickUpgradePrefabs;
 
     public bool[] clickUpgradeIsUnlocked;
 
@@ -28,7 +28,7 @@ public class UpgradeManager : MonoBehaviour
 
     [Header("Auto Gen Upgrade Data")]
     public List<Upgrades> autoGenUpgrades;
-    public Upgrades autoGenUpgradePrefab;
+    public Upgrades[] autoGenUpgradePrefab;
 
     public ScrollRect autoGenUpgradeScroll;
     public Transform autoGenUpgradePanel;
@@ -78,7 +78,7 @@ public class UpgradeManager : MonoBehaviour
 
         for (int i = 0; i < GameManager.instance.data.clickUpgradeLevel.Count; i++)
         {
-            Upgrades upgrade = Instantiate(clickUpgradePrefab, clickUpgradePanel);
+            Upgrades upgrade = Instantiate(clickUpgradePrefabs[i], clickUpgradePanel);
             upgrade.upgradeID = i;
             upgrade.gameObject.SetActive(false);
             clickUpgrades.Add(upgrade);
@@ -86,7 +86,7 @@ public class UpgradeManager : MonoBehaviour
 
         for (int i = 0; i < GameManager.instance.data.autoGenUpgradeLevel.Count; i++)
         {
-            Upgrades upgrade = Instantiate(autoGenUpgradePrefab, autoGenUpgradePanel);
+            Upgrades upgrade = Instantiate(autoGenUpgradePrefab[i], autoGenUpgradePanel);
             upgrade.upgradeID = i;
             upgrade.gameObject.SetActive(false);
             autoGenUpgrades.Add(upgrade);
@@ -155,8 +155,11 @@ public class UpgradeManager : MonoBehaviour
         }
         void UpdateUI(List<Upgrades> upgrade, List<int> upgradeLevels, string[] upgradeNames, int iD)
         {
-            upgrade[iD].levelText.text = upgradeLevels[iD].ToString();
-            upgrade[iD].costText.text = $"Cost: {UpgradeCost(type, iD):F2} Chips";
+            if(upgrade == autoGenUpgrades)
+            {
+                upgrade[iD].levelText.text = upgradeLevels[iD].ToString();
+            }
+            upgrade[iD].costText.text = $"{UpgradeCost(type, iD):F0} Chips";
             upgrade[iD].nameText.text = upgradeNames[iD];
         }
     }

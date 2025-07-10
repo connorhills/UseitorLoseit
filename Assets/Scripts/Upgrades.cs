@@ -17,5 +17,6 @@ public class Upgrades : MonoBehaviour
     public void BuyClickUpgrade() => UpgradeManager.instance.BuyUpgrade("click", upgradeID);
     public void BuyAutoGenUpgrade() => UpgradeManager.instance.BuyUpgrade("autoGen", upgradeID);
     public void BuyCriticalChanceUpgrade() => UpgradeManager.instance.BuyUpgrade("critChance", upgradeID);
+    public void BuyCriticalBonusUpgrade() => UpgradeManager.instance.BuyUpgrade("critBonus", upgradeID);
     
 }

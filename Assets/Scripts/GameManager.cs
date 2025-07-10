@@ -19,14 +19,12 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private RectTransform chipButton;
 
-    public double critMultiplier = 100.0;
-
     public double BaseChipsPerClick()
     {
         double total = 1;
         for (int i = 0; i < data.clickUpgradeLevel.Count; i++)
         {
-            total *= (data.clickUpgradeLevel[i] > 0) ? Math.Pow(2, data.clickUpgradeLevel[i]) : 1;
+            total *= (data.clickUpgradeLevel[i] > 0) ? Math.Pow(10, data.clickUpgradeLevel[i]) : 1;
         }
         return total;
     }
@@ -34,12 +32,6 @@ public class GameManager : MonoBehaviour
     public double ChipsPerClick()
     {
         double total = BaseChipsPerClick();
-
-        if(UnityEngine.Random.value < TotalCritChance())
-        {
-            total *= critMultiplier;
-            Debug.Log($"hit {total}");
-        }
         
         return total;
     }
@@ -84,8 +76,26 @@ public class GameManager : MonoBehaviour
 
     public void increase_chips()
     {
+        double baseCLick = BaseChipsPerClick();
         float randomMultiplier = UnityEngine.Random.Range(0.5f, 1.5f);
-        data.chips += ChipsPerClick() * randomMultiplier;
+        double clickValue = baseCLick * randomMultiplier;
+
+        if (UnityEngine.Random.value < TotalCritChance())
+        {
+            double critBonus = 0.1;
+            for (int i = 0; i < data.critBonusUpgradeLevel.Count; i++)
+            {
+                if (data.critBonusUpgradeLevel[i] > 0)
+                {
+                    critBonus += UpgradeManager.instance.critBonusUpgradeBasePow[i];
+                }
+            }
+            double totalCritBonus = 1 + critBonus;
+            clickValue *= totalCritBonus;
+            Debug.Log($"hit {clickValue} multiplier {totalCritBonus}");
+        }
+
+        data.chips += clickValue;
         singleChip.PlayOneShot(singleChip.clip);
     }
 }

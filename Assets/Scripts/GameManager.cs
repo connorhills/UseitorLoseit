@@ -24,7 +24,7 @@ public class GameManager : MonoBehaviour
         double total = 1;
         for (int i = 0; i < data.clickUpgradeLevel.Count; i++)
         {
-            total *= (data.clickUpgradeLevel[i] > 0) ? Math.Pow(10, data.clickUpgradeLevel[i]) : 1;
+            total *= (data.clickUpgradeLevel[i] > 0) ? Math.Pow(2, data.clickUpgradeLevel[i]) : 1;
         }
         return total;
     }
@@ -38,13 +38,50 @@ public class GameManager : MonoBehaviour
 
     public double TotalCritChance()
     {
-        double total = 0;
+        double critChance = 0;
         for (int i = 0; i < data.critChanceUpgradeLevel.Count; i++)
         {
             if (data.critChanceUpgradeLevel[i] > 0)
-                total += UpgradeManager.instance.critChanceUpgradeBasePow[i];
+                critChance += UpgradeManager.instance.critChanceUpgradeBasePow[i];
         }
-        return total;
+        return critChance;
+    }
+
+    public double TotalCritBonus()
+    {
+        double critBonus = 0.1;
+        for (int i = 0; i < data.critBonusUpgradeLevel.Count; i++)
+        {
+            if (data.critBonusUpgradeLevel[i] > 0)
+                critBonus += UpgradeManager.instance.critBonusUpgradeBasePow[i];
+        }
+        return critBonus;
+    }
+
+    public double TotalClickMultMin()
+    {
+        double minMultipler = 0.5;
+        for (int i = 0; i < data.clickMultMinUpgradeLevel.Count; i++)
+        {
+            if (data.clickMultMinUpgradeLevel[i] > 0)
+            {
+                minMultipler += UpgradeManager.instance.clickMultMinUpgradeBasePow[i];
+            }
+        }
+        return minMultipler;
+    }
+
+    public double TotalClickMultMax()
+    {
+        double maxMultipler = 1.5;
+        for(int i = 0; i < data.clickMultMaxUpgradeLevel.Count; i++)
+        {
+            if(data.clickMultMaxUpgradeLevel[i] > 0)
+            {
+                maxMultipler += UpgradeManager.instance.clickMultMaxUpgradeBasePow[i];
+            }
+        }
+        return maxMultipler;
     }
 
     public double ChipsPerSecond()
@@ -76,9 +113,29 @@ public class GameManager : MonoBehaviour
 
     public void increase_chips()
     {
-        double baseCLick = BaseChipsPerClick();
-        float randomMultiplier = UnityEngine.Random.Range(0.5f, 1.5f);
-        double clickValue = baseCLick * randomMultiplier;
+        double baseClick = BaseChipsPerClick();
+
+        double minMultipler = 0.5;
+        double maxMultipler = 1.5;
+
+        for (int i = 0; i < data.clickMultMinUpgradeLevel.Count; i++)
+        {
+            if(data.clickMultMinUpgradeLevel[i] > 0)
+            {
+                minMultipler += UpgradeManager.instance.clickMultMinUpgradeBasePow[i];
+            }
+        }
+
+        for (int i = 0; i < data.clickMultMaxUpgradeLevel.Count; i++)
+        {
+            if(data.clickMultMaxUpgradeLevel[i] > 0)
+            {
+                maxMultipler += UpgradeManager.instance.clickMultMaxUpgradeBasePow[i];
+            }
+        }
+
+        double randomMultiplier = UnityEngine.Random.Range((float)minMultipler, (float)maxMultipler);
+        double clickValue = baseClick * randomMultiplier;
 
         if (UnityEngine.Random.value < TotalCritChance())
         {
@@ -91,8 +148,24 @@ public class GameManager : MonoBehaviour
                 }
             }
             double totalCritBonus = 1 + critBonus;
+            Debug.Log($"Pre-crit click value: {clickValue}");
             clickValue *= totalCritBonus;
-            Debug.Log($"hit {clickValue} multiplier {totalCritBonus}");
+            if (clickValue < BaseChipsPerClick() && randomMultiplier < 1)
+            {
+                Debug.Log($"MINI WIN! {clickValue} Crit Bonus: {totalCritBonus} Random Multiplier: {randomMultiplier}");
+            }
+            else if (clickValue > (BaseChipsPerClick() * 1.45) && randomMultiplier > 1.45)
+            {
+                Debug.Log($"JACKPOT WIN! {clickValue} Crit Bonus: {totalCritBonus} Random Multiplier: {randomMultiplier}");
+            }
+            else if (clickValue > (BaseChipsPerClick() * 1.3) && randomMultiplier > 1.3)
+            {
+                Debug.Log($"MEGA WIN! {clickValue} Crit Bonus: {totalCritBonus} Random Multiplier: {randomMultiplier}");
+            }
+            else
+            {
+                Debug.Log($"MINOR WIN! {clickValue} Crit Bonus: {totalCritBonus} Random Multiplier: {randomMultiplier}");
+            }
         }
 
         data.chips += clickValue;

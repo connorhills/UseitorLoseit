@@ -10,6 +10,8 @@ public class Data
     public List<int> autoGenUpgradeLevel;
     public List<int> critChanceUpgradeLevel;
     public List<int> critBonusUpgradeLevel;
+    public List<int> clickMultMinUpgradeLevel;
+    public List<int> clickMultMaxUpgradeLevel;
     
     public Data()
     {
@@ -19,5 +21,7 @@ public class Data
         autoGenUpgradeLevel = new int[11].ToList();
         critChanceUpgradeLevel = new int[9].ToList();
         critBonusUpgradeLevel = new int[10].ToList();
+        clickMultMinUpgradeLevel = new int[5].ToList();
+        clickMultMaxUpgradeLevel = new int[6].ToList();
     }
 }

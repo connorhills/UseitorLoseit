@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -51,6 +52,30 @@ public class UpgradeManager : MonoBehaviour
     public double[] critBonusUpgradeBasePow;
     public double[] critBonusUpgradeUnlockVal;
 
+    [Header("Click Mult Min Upgrade Data")]
+    public List<Upgrades> clickMultMinUpgrades;
+    public Upgrades[] clickMultMinUpgradePrefabs;
+
+    public bool[] clickMultMinUpgradeIsUnlocked;
+
+    public string[] clickMultMinUpgradeNames;
+
+    public double[] clickMultMinUpgradeBaseCost;
+    public double[] clickMultMinUpgradeBasePow;
+    public double[] clickMultMinUpgradeUnlockVal;
+
+    [Header("Click Mult Max Upgrade Data")]
+    public List<Upgrades> clickMultMaxUpgrades;
+    public Upgrades[] clickMultMaxUpgradePrefabs;
+
+    public bool[] clickMultMaxUpgradeIsUnlocked;
+
+    public string[] clickMultMaxUpgradeNames;
+
+    public double[] clickMultMaxUpgradeBaseCost;
+    public double[] clickMultMaxUpgradeBasePow;
+    public double[] clickMultMaxUpgradeUnlockVal;
+
     [Header("Auto Gen Upgrade Data")]
     public List<Upgrades> autoGenUpgrades;
     public Upgrades[] autoGenUpgradePrefab;
@@ -67,6 +92,10 @@ public class UpgradeManager : MonoBehaviour
         MethodManager.UpgradeCheck(GameManager.instance.data.clickUpgradeLevel, 8);
         MethodManager.UpgradeCheck(GameManager.instance.data.critChanceUpgradeLevel, 9);
         MethodManager.UpgradeCheck(GameManager.instance.data.critBonusUpgradeLevel, 10);
+        MethodManager.UpgradeCheck(GameManager.instance.data.clickMultMinUpgradeLevel, 5);
+        MethodManager.UpgradeCheck(GameManager.instance.data.clickMultMaxUpgradeLevel, 6);
+
+        /* Click Upgrades */
 
         clickUpgradeBasePow = new double[GameManager.instance.data.clickUpgradeLevel.Count];
         clickUpgradeBaseCost = new double[] { 100, 1000, 25000, 50000, 100000, 250000, 500000, 1000000 };
@@ -85,9 +114,11 @@ public class UpgradeManager : MonoBehaviour
             clickUpgradeNames[i] = $"x{clickUpgradeBasePow[i]}";
         }
 
-        critChanceUpgradeBasePow = new double[] { 0.01, 0.05, 0.075, 0.1, 0.222, 0.5, 0.777, 0.9, 1 };
+        /* Crit Chance Upgrades */
+
+        critChanceUpgradeBasePow = new double[] { 0.01, 0.0125, 0.015, 0.02, 0.0222, 0.01, 0.015, 0.02, 0.0777 };
         critChanceUpgradeBaseCost = new double[] { 250, 1250, 13000, 30000, 45000, 112500, 285000, 575000, 1150000 };
-        critChanceUpgradeUnlockVal = new double[] { 0, 1250, 13000, 30000, 45000, 112500, 285000, 575000, 1150000 };
+        critChanceUpgradeUnlockVal = new double[] { 0, 250, 1250, 13000, 30000, 45000, 112500, 285000, 575000 };
         critChanceUpgradeIsUnlocked = new bool[critChanceUpgradeBaseCost.Length];
 
         critChanceUpgradeNames = new string[critChanceUpgradeBasePow.Length];
@@ -96,9 +127,11 @@ public class UpgradeManager : MonoBehaviour
             critChanceUpgradeNames[i] = $"+{critChanceUpgradeBasePow[i] * 100}%";
         }
 
+        /* Crit Bonus Upgrades */
+
         critBonusUpgradeBasePow = new double[] { 0.001, 0.005, 0.01, 0.02, 0.04, 0.05, 0.1, 0.2, 0.4, 0.777 };
         critBonusUpgradeBaseCost = new double[] { 500, 1500, 15000, 35000, 60000, 125000, 325000, 650000, 1350000, 2000000 };
-        critBonusUpgradeUnlockVal = new double[] { 0, 1500, 15000, 35000, 60000, 125000, 325000, 650000, 135000, 2000000 };
+        critBonusUpgradeUnlockVal = new double[] { 0, 500, 1500, 15000, 35000, 60000, 125000, 325000, 650000, 135000 };
         critBonusUpgradeIsUnlocked = new bool[critBonusUpgradeBaseCost.Length];
 
         critBonusUpgradeNames = new string[critBonusUpgradeBasePow.Length];
@@ -107,9 +140,37 @@ public class UpgradeManager : MonoBehaviour
             critBonusUpgradeNames[i] = $"+{critBonusUpgradeBasePow[i] * 100}%";
         }
 
-        autoGenUpgradeBasePow   = new double[] { 1, 5, 10, 20, 35, 50, 100, 250, 400, 1000, 5000, 10000};
-        autoGenUpgradeBaseCost  = new double[] { 50, 100, 750, 1500, 5000, 12500, 23500, 55000, 115000, 225000, 545000, 1000000 };
-        autoGenUpgradeCostMult  = new double[] { 1.4, 1.38, 1.45, 1.43, 1.41, 1.4, 1.39, 1.38, 1.37, 1.36, 1.35, 1.35 };
+        /* Click Mult Min Upgrades */
+
+        clickMultMinUpgradeBasePow = new double[] { 0.1, 0.1, 0.1, 0.1, 0.1 };
+        clickMultMinUpgradeBaseCost = new double[] { 10000, 100000, 1000000, 5000000, 10000000 };
+        clickMultMinUpgradeUnlockVal = new double[] { 0, 10000, 100000, 1000000, 5000000, };
+        clickMultMinUpgradeIsUnlocked = new bool[clickMultMinUpgradeBaseCost.Length];
+
+        clickMultMinUpgradeNames = new string[clickMultMinUpgradeBasePow.Length];
+        for (int i = 0; i < clickMultMinUpgradeBasePow.Length; i++)
+        {
+            clickMultMinUpgradeNames[i] = $"+{clickMultMinUpgradeBasePow[i]}x";
+        }
+
+        /* Click Mult Max Upgrades */
+
+        clickMultMaxUpgradeBasePow = new double[] { 0.1, 0.1, 0.1, 0.1, 0.1, 0.5 };
+        clickMultMaxUpgradeBaseCost = new double[] { 15000, 200000, 1500000, 7777777, 12500000, 21500000 };
+        clickMultMaxUpgradeUnlockVal = new double[] { 0, 15000, 200000, 1500000, 7777777, 1250000 };
+        clickMultMaxUpgradeIsUnlocked = new bool[clickMultMaxUpgradeBaseCost.Length];
+
+        clickMultMaxUpgradeNames = new string[clickMultMaxUpgradeBasePow.Length];
+        for (int i = 0; i < clickMultMaxUpgradeBasePow.Length; i++)
+        {
+            clickMultMaxUpgradeNames[i] = $"+{clickMultMaxUpgradeBasePow[i]}x";
+        }
+
+        /* AutoGen Upgrades */
+
+        autoGenUpgradeBasePow = new double[] { 1, 5, 10, 20, 35, 50, 100, 250, 400, 1000, 5000, 10000 };
+        autoGenUpgradeBaseCost = new double[] { 50, 100, 750, 1500, 5000, 12500, 23500, 55000, 115000, 225000, 545000, 1000000 };
+        autoGenUpgradeCostMult = new double[] { 1.4, 1.38, 1.45, 1.43, 1.41, 1.4, 1.39, 1.38, 1.37, 1.36, 1.35, 1.35 };
         autoGenUpgradesUnlocked = new double[] { 0, 50, 100, 750, 1500, 5000, 12500, 23500, 55000, 115000, 225000, 545000 };
 
         autoGenUpgradeNames = new string[autoGenUpgradeBasePow.Length];
@@ -118,29 +179,13 @@ public class UpgradeManager : MonoBehaviour
             autoGenUpgradeNames[i] = $"+{autoGenUpgradeBasePow[i]} Chips/s";
         }
 
-        for (int i = 0; i < GameManager.instance.data.clickUpgradeLevel.Count; i++)
-        {
-            Upgrades upgrade = Instantiate(clickUpgradePrefabs[i], upgradePanel);
-            upgrade.upgradeID = i;
-            upgrade.gameObject.SetActive(false);
-            clickUpgrades.Add(upgrade);
-        }
+        /* Instantiate Upgrade Prefabs */
 
-        for (int i = 0; i < GameManager.instance.data.critChanceUpgradeLevel.Count; i++)
-        {
-            Upgrades upgrade = Instantiate(critChanceUpgradePrefabs[i], upgradePanel);
-            upgrade.upgradeID = i;
-            upgrade.gameObject.SetActive(false);
-            critChanceUpgrades.Add(upgrade);
-        }
-
-        for (int i = 0; i < GameManager.instance.data.critBonusUpgradeLevel.Count; i++)
-        {
-            Upgrades upgrade = Instantiate(critBonusUpgradePrefabs[i], upgradePanel);
-            upgrade.upgradeID = i;
-            upgrade.gameObject.SetActive(false);
-            critBonusUpgrades.Add(upgrade);
-        }
+        InstantiateUpgrades(GameManager.instance.data.clickUpgradeLevel, clickUpgradePrefabs, upgradePanel, clickUpgrades);
+        InstantiateUpgrades(GameManager.instance.data.critChanceUpgradeLevel, critChanceUpgradePrefabs, upgradePanel, critChanceUpgrades);
+        InstantiateUpgrades(GameManager.instance.data.critBonusUpgradeLevel, critBonusUpgradePrefabs, upgradePanel, critBonusUpgrades);
+        InstantiateUpgrades(GameManager.instance.data.clickMultMinUpgradeLevel, clickMultMinUpgradePrefabs, upgradePanel, clickMultMinUpgrades);
+        InstantiateUpgrades(GameManager.instance.data.clickMultMaxUpgradeLevel, clickMultMaxUpgradePrefabs, upgradePanel, clickMultMaxUpgrades);
 
         for (int i = 0; i < GameManager.instance.data.autoGenUpgradeLevel.Count; i++)
         {
@@ -155,48 +200,48 @@ public class UpgradeManager : MonoBehaviour
         UpdateUpgradeUI("click");
         UpdateUpgradeUI("critChance");
         UpdateUpgradeUI("critBonus");
+        UpdateUpgradeUI("clickMultMin");
+        UpdateUpgradeUI("clickMultMax");
         UpdateUpgradeUI("autoGen");
+
+        void InstantiateUpgrades(List<int> level, Upgrades[] upgradePrefab, Transform uPanel, List<Upgrades> upgrades)
+        {
+            for (int i = 0; i < level.Count; i++)
+            {
+                Upgrades upgrade = Instantiate(upgradePrefab[i], uPanel);
+                upgrade.upgradeID = i;
+                upgrade.gameObject.SetActive(false);
+                upgrades.Add(upgrade);
+            }
+        }
     }
 
     public void Update()
     {
-        for (var i = 0; i < clickUpgrades.Count; i++)
-        {
-            if(!clickUpgradeIsUnlocked[i] && GameManager.instance.data.chips >= clickUpgradeUnlockVal[i])
-            {
-                clickUpgradeIsUnlocked[i] = true;
-            }
-
-            bool isUnlocked = clickUpgradeIsUnlocked[i] && GameManager.instance.data.clickUpgradeLevel[i] == 0;
-            clickUpgrades[i].gameObject.SetActive(isUnlocked);
-        }
-
-        for (var i = 0; i < critChanceUpgrades.Count; i++)
-        {
-            if (!critChanceUpgradeIsUnlocked[i] && GameManager.instance.data.chips >= critChanceUpgradeUnlockVal[i])
-            {
-                critChanceUpgradeIsUnlocked[i] = true;
-            }
-
-            bool isUnlocked = critChanceUpgradeIsUnlocked[i] && GameManager.instance.data.critChanceUpgradeLevel[i] == 0;
-            critChanceUpgrades[i].gameObject.SetActive(isUnlocked);
-        }
-
-        for (var i = 0; i < critBonusUpgrades.Count; i++)
-        {
-            if (!critBonusUpgradeIsUnlocked[i] && GameManager.instance.data.chips >= critBonusUpgradeUnlockVal[i])
-            {
-                critBonusUpgradeIsUnlocked[i] = true;
-            }
-
-            bool isUnlocked = critBonusUpgradeIsUnlocked[i] && GameManager.instance.data.critBonusUpgradeLevel[i] == 0;
-            critBonusUpgrades[i].gameObject.SetActive(isUnlocked);
-        }
+        UnlockedUpgrades(clickUpgrades, clickUpgradeIsUnlocked, clickUpgradeUnlockVal, GameManager.instance.data.clickUpgradeLevel);
+        UnlockedUpgrades(critChanceUpgrades, critChanceUpgradeIsUnlocked, critChanceUpgradeUnlockVal, GameManager.instance.data.critChanceUpgradeLevel);
+        UnlockedUpgrades(critBonusUpgrades, critBonusUpgradeIsUnlocked, critBonusUpgradeUnlockVal, GameManager.instance.data.critBonusUpgradeLevel);
+        UnlockedUpgrades(clickMultMinUpgrades, clickMultMinUpgradeIsUnlocked, clickMultMinUpgradeUnlockVal, GameManager.instance.data.clickMultMinUpgradeLevel);
+        UnlockedUpgrades(clickMultMaxUpgrades, clickMultMaxUpgradeIsUnlocked, clickMultMaxUpgradeUnlockVal, GameManager.instance.data.clickMultMaxUpgradeLevel);
 
         for (var i = 0; i < autoGenUpgrades.Count; i++)
         {
             if (!autoGenUpgrades[i].gameObject.activeSelf)
                 autoGenUpgrades[i].gameObject.SetActive(GameManager.instance.data.chips >= autoGenUpgradesUnlocked[i]);
+        }
+
+        void UnlockedUpgrades(List<Upgrades> upgrades, bool[] unlocked, double[] unlockVal, List<int> level)
+        {
+            for (var i = 0; i < upgrades.Count; i++)
+            {
+                if (!unlocked[i] && GameManager.instance.data.chips >= unlockVal[i])
+                {
+                    unlocked[i] = true;
+                }
+
+                bool isUnlocked = unlocked[i] && level[i] == 0;
+                upgrades[i].gameObject.SetActive(isUnlocked);
+            }
         }
     }
 
@@ -207,69 +252,52 @@ public class UpgradeManager : MonoBehaviour
         switch (type)
         {
             case "click":
-                if (upgradeID == -1)
-                {
-                    for (int i = 0; i < clickUpgrades.Count; i++)
-                    {
-                        UpdateUI(clickUpgrades, data.clickUpgradeLevel, clickUpgradeNames, i);
-                    }
-                }
-                else
-                {
-                    UpdateUI(clickUpgrades, data.clickUpgradeLevel, clickUpgradeNames, upgradeID);
-                }
+                QuickUpdateUI(clickUpgrades, GameManager.instance.data.clickUpgradeLevel, clickUpgradeNames);
                 break;
 
             case "critChance":
-                if (upgradeID == -1)
-                {
-                    for (int i = 0; i < critChanceUpgrades.Count; i++)
-                    {
-                        UpdateUI(critChanceUpgrades, data.critChanceUpgradeLevel, critChanceUpgradeNames, i);
-                    }
-                }
-                else
-                {
-                    UpdateUI(critChanceUpgrades, data.critChanceUpgradeLevel, critChanceUpgradeNames, upgradeID);
-                }
+                QuickUpdateUI(critChanceUpgrades, GameManager.instance.data.critChanceUpgradeLevel, critChanceUpgradeNames);
                 break;
 
             case "critBonus":
-                if (upgradeID == -1)
-                {
-                    for (int i = 0; i < critBonusUpgrades.Count; i++)
-                    {
-                        UpdateUI(critBonusUpgrades, data.critBonusUpgradeLevel, critBonusUpgradeNames, i);
-                    }
-                }
-                else
-                {
-                    UpdateUI(critBonusUpgrades, data.critBonusUpgradeLevel, critBonusUpgradeNames, upgradeID);
-                }
+                QuickUpdateUI(critBonusUpgrades, GameManager.instance.data.critBonusUpgradeLevel, critBonusUpgradeNames);
+                break;
+
+            case "clickMultMin":
+                QuickUpdateUI(clickMultMinUpgrades, GameManager.instance.data.clickMultMinUpgradeLevel, clickMultMinUpgradeNames);
+                break;
+
+            case "clickMultMax":
+                QuickUpdateUI(clickMultMaxUpgrades, GameManager.instance.data.clickMultMaxUpgradeLevel, clickMultMaxUpgradeNames);
                 break;
 
             case "autoGen":
-                if (upgradeID == -1)
-                {
-                    for (int i = 0; i < autoGenUpgrades.Count; i++)
-                    {
-                        UpdateUI(autoGenUpgrades, data.autoGenUpgradeLevel, autoGenUpgradeNames, i);
-                    }
-                }
-                else
-                {
-                    UpdateUI(autoGenUpgrades, data.autoGenUpgradeLevel, autoGenUpgradeNames, upgradeID);
-                }
+                QuickUpdateUI(autoGenUpgrades, GameManager.instance.data.autoGenUpgradeLevel, autoGenUpgradeNames);
                 break;
         }
-        void UpdateUI(List<Upgrades> upgrade, List<int> upgradeLevels, string[] upgradeNames, int iD)
+        void QuickUpdateUI(List<Upgrades> upgrades, List<int> level, string[] names)
         {
-            if(upgrade == autoGenUpgrades)
+            if (upgradeID == -1)
             {
-                upgrade[iD].levelText.text = upgradeLevels[iD].ToString();
+                for (int i = 0; i < upgrades.Count; i++)
+                {
+                    UpdateUI(upgrades, level, names, i);
+                }
             }
-            upgrade[iD].costText.text = $"{UpgradeCost(type, iD):F0} Chips";
-            upgrade[iD].nameText.text = upgradeNames[iD];
+            else
+            {
+                UpdateUI(upgrades, level, names, upgradeID);
+            }
+
+            void UpdateUI(List<Upgrades> upgrade, List<int> upgradeLevels, string[] upgradeNames, int iD)
+            {
+                if (upgrade == autoGenUpgrades)
+                {
+                    upgrade[iD].levelText.text = upgradeLevels[iD].ToString();
+                }
+                upgrade[iD].costText.text = $"{UpgradeCost(type, iD):F0} Chips";
+                upgrade[iD].nameText.text = upgradeNames[iD];
+            }
         }
     }
 
@@ -284,6 +312,10 @@ public class UpgradeManager : MonoBehaviour
                 return critChanceUpgradeBaseCost[upgradeID];
             case "critBonus":
                 return critBonusUpgradeBaseCost[upgradeID];
+            case "clickMultMin":
+                return clickMultMinUpgradeBaseCost[upgradeID];
+            case "clickMultMax":
+                return clickMultMaxUpgradeBaseCost[upgradeID];
             case "autoGen":
                 return autoGenUpgradeBaseCost[upgradeID]
                 * Math.Pow(autoGenUpgradeCostMult[upgradeID], (double)data.autoGenUpgradeLevel[upgradeID]);
@@ -291,7 +323,7 @@ public class UpgradeManager : MonoBehaviour
         }
 
         return 0;
-        
+
     }
 
 
@@ -302,41 +334,37 @@ public class UpgradeManager : MonoBehaviour
         switch (type)
         {
             case "click":
-                if (data.clickUpgradeLevel[upgradeID] == 0 && data.chips >= UpgradeCost(type, upgradeID))
-                {
-                    data.chips -= UpgradeCost(type, upgradeID);
-                    data.clickUpgradeLevel[upgradeID] = 1;
-
-                    clickUpgrades[upgradeID].gameObject.SetActive(false);
-                }
-                UpdateUpgradeUI(type, upgradeID);
+                QuickBuyUpgrade(GameManager.instance.data.clickUpgradeLevel, clickUpgrades);
                 break;
             case "critChance":
-                if (data.critChanceUpgradeLevel[upgradeID] == 0 && data.chips >= UpgradeCost(type, upgradeID))
-                {
-                    data.chips -= UpgradeCost(type, upgradeID);
-                    data.critChanceUpgradeLevel[upgradeID] = 1;
-                    critChanceUpgrades[upgradeID].gameObject.SetActive(false);
-                }
-                UpdateUpgradeUI(type, upgradeID);
+                QuickBuyUpgrade(GameManager.instance.data.critChanceUpgradeLevel, critChanceUpgrades);
                 break;
             case "critBonus":
-                if (data.critBonusUpgradeLevel[upgradeID] == 0 && data.chips >= UpgradeCost(type, upgradeID))
-                {
-                    data.chips -= UpgradeCost(type, upgradeID);
-                    data.critBonusUpgradeLevel[upgradeID] = 1;
-                    critBonusUpgrades[upgradeID].gameObject.SetActive(false);
-                }
-                UpdateUpgradeUI(type, upgradeID);
+                QuickBuyUpgrade(GameManager.instance.data.critBonusUpgradeLevel, critBonusUpgrades);
+                break;
+            case "clickMultMin":
+                QuickBuyUpgrade(GameManager.instance.data.clickMultMinUpgradeLevel, clickMultMinUpgrades);
+                break;
+            case "clickMultMax":
+                QuickBuyUpgrade(GameManager.instance.data.clickMultMaxUpgradeLevel, clickMultMaxUpgrades);
                 break;
             case "autoGen":
-                if (data.chips >= UpgradeCost(type, upgradeID))
-                {
-                    data.chips -= UpgradeCost(type, upgradeID);
-                    data.autoGenUpgradeLevel[upgradeID] += 1;
-                }
-                UpdateUpgradeUI(type, upgradeID);
+                QuickBuyUpgrade(GameManager.instance.data.autoGenUpgradeLevel, autoGenUpgrades);
                 break;
         }
+
+        void QuickBuyUpgrade(List<int> level, List<Upgrades> upgrade)
+        {
+            if (level[upgradeID] == 0 && data.chips >= UpgradeCost(type, upgradeID))
+            {
+                data.chips -= UpgradeCost(type, upgradeID);
+                level[upgradeID] = 1;
+
+                upgrade[upgradeID].gameObject.SetActive(false);
+            }
+            UpdateUpgradeUI(type, upgradeID);
+        }
     }
+
+
 }

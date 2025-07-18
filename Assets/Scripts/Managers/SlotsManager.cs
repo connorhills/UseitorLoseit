@@ -7,8 +7,8 @@ using UnityEngine.UI;
 
 public class SlotsManager : MonoBehaviour
 {
-    [Range(1, 5)]public int slotMachineHeight;
-    [Range(1, 7)]public int slotMachineWidth;
+    [Range(1, 20)]public int slotMachineHeight;
+    [Range(1, 25)]public int slotMachineWidth;
 
     [Header("Grid Layout")]
     [SerializeField] private float slotCellSize = 175f;    // Size of each slot
@@ -34,7 +34,6 @@ public class SlotsManager : MonoBehaviour
     private GameObject[,] slotMachineGrid;
     private List<GameObject> slotMachineMatchLines;
     private AudioSource slotWinAudio;
-    private Vector3 offset = new Vector3(0, 0, -1);
 
     private void Start()
     {
@@ -53,22 +52,22 @@ public class SlotsManager : MonoBehaviour
 
     private void InitializeSlotMachineGrid()
     {
-        // Calculate effective sizes
-        float effectiveCellSize = slotCellSize * gridScale;
-        float effectivePadding = slotPadding * gridScale;
+        // Calculate real cell and padding sizes after scaling
+        float cellSize = slotCellSize * gridScale;
+        float cellPadding = slotPadding * gridScale;
         
-        // This is the distance from the center of one cell to the center of the next cell
-        float cellSpacing = effectiveCellSize + effectivePadding;
+        // The distance from the center of one cell to the center of the next
+        float cellSpacing = cellSize + cellPadding;
         
-        // Calculate the total grid size including padding
-        float totalWidth = (slotMachineWidth * effectiveCellSize) + ((slotMachineWidth - 1) * effectivePadding);
-        float totalHeight = (slotMachineHeight * effectiveCellSize) + ((slotMachineHeight - 1) * effectivePadding);
+        // Calculate total width/height based on the number of cells and padding between them
+        float totalWidth = (slotMachineWidth * cellSize) + ((slotMachineWidth - 1) * cellPadding);
+        float totalHeight = (slotMachineHeight * cellSize) + ((slotMachineHeight - 1) * cellPadding);
         
-        // Calculate offset needed to center the grid
-        float startX = -(totalWidth / 2) + (effectiveCellSize / 2) + slotOffset.x;
-        float startY = (totalHeight / 2) - (effectiveCellSize / 2) + slotOffset.y;
+        // Calculate offset 
+        float startX = -(totalWidth / 2) + (cellSize / 2) + slotOffset.x;
+        float startY = (totalHeight / 2) - (cellSize / 2) + slotOffset.y;
         
-        Debug.Log($"Grid dimensions: {slotMachineWidth}x{slotMachineHeight}, Cell Size: {effectiveCellSize}, Padding: {effectivePadding}");
+        Debug.Log($"Grid dimensions: {slotMachineWidth}x{slotMachineHeight}, Cell Size: {cellSize}, Padding: {cellPadding}");
         
         for (int i = 0; i < slotMachineHeight; i++)
         {
@@ -80,20 +79,19 @@ public class SlotsManager : MonoBehaviour
                 RectTransform rt = thisSlot.GetComponent<RectTransform>();
                 if (rt != null)
                 {
+                    // Set anchor and pivot to center of parent 
                     rt.anchorMin = new Vector2(0.5f, 0.5f);
                     rt.anchorMax = new Vector2(0.5f, 0.5f);
                     rt.pivot = new Vector2(0.5f, 0.5f);
                     
-                    // Position relative to the calculated center offset using cellSpacing
+                    // Position slot using calculated offsets and spacing
                     rt.anchoredPosition = new Vector2(
                         startX + (j * cellSpacing), 
                         startY - (i * cellSpacing)
                     );
                     
-                    // Set the actual size of the RectTransform (this is what affects visual size)
-                    rt.sizeDelta = new Vector2(effectiveCellSize, effectiveCellSize);
-                    
-                    // Keep scale at 1 since we're using sizeDelta for size
+                    // Set visual size 
+                    rt.sizeDelta = new Vector2(cellSize, cellSize);
                     rt.localScale = Vector3.one;
                     
                     Debug.Log($"Slot {i},{j} positioned at {rt.anchoredPosition} with size: {rt.sizeDelta}");
@@ -185,7 +183,7 @@ public class SlotsManager : MonoBehaviour
                     if (winLength >= 3)
                     {
                         winEnd = slotMachineGrid[j, i];
-                        currentSpinWinnings += 10 * (winLength - 2);
+                        currentSpinWinnings += GetLinePayout(winLength);
                         DrawUILineFromSlots(winStart, winEnd);
                         win = true;
                     }
@@ -196,7 +194,7 @@ public class SlotsManager : MonoBehaviour
             if (winLength >= 3)
             {
                 winEnd = slotMachineGrid[slotMachineHeight - 1, i];
-                currentSpinWinnings += 10 * (winLength - 2);
+                currentSpinWinnings += GetLinePayout(winLength);
                 DrawUILineFromSlots(winStart, winEnd);
                 win = true;
             }
@@ -219,7 +217,7 @@ public class SlotsManager : MonoBehaviour
                     if(winLength >= 3)
                     {
                         winEnd = slotMachineGrid[i, j];
-                        currentSpinWinnings += 10 * (winLength - 2);
+                        currentSpinWinnings += GetLinePayout(winLength);
                         DrawUILineFromSlots(winStart, winEnd);
                         win = true;
                     }
@@ -230,7 +228,7 @@ public class SlotsManager : MonoBehaviour
             if (winLength >= 3)
             {
                 winEnd = slotMachineGrid[i, slotMachineWidth - 1];
-                currentSpinWinnings += 10 * (winLength - 2);
+                currentSpinWinnings += GetLinePayout(winLength);
                 DrawUILineFromSlots(winStart, winEnd);
                 win = true;
             }
@@ -242,21 +240,19 @@ public class SlotsManager : MonoBehaviour
             for (int j = 0; j <= slotMachineWidth - 3; j++)
             {
                 string slotName = slotMachineGrid[i, j].name;
-                bool diagonalWin = true;
+                int winLength = 1;
 
-                for (int k = 0; k < 3; k++)
+                while (i + winLength < slotMachineHeight &&
+                       j + winLength < slotMachineWidth &&
+                       slotMachineGrid[i + winLength, j + winLength].name == slotName)
                 {
-                    if (slotMachineGrid[i + k, j + k].name != slotName)
-                    {
-                        diagonalWin = false;
-                        break;
-                    }
+                    winLength++;
                 }
 
-                if (diagonalWin)
+                if (winLength >= 3)
                 {
-                    currentSpinWinnings += 100;
-                    DrawUILineFromSlots(slotMachineGrid[i, j], slotMachineGrid[i + 2, j + 2]);
+                    currentSpinWinnings += GetLinePayout(winLength) * 3;
+                    DrawUILineFromSlots(slotMachineGrid[i, j], slotMachineGrid[i + winLength - 1, j + winLength - 1]);
                     win = true;
                 }
             }
@@ -268,21 +264,19 @@ public class SlotsManager : MonoBehaviour
             for (int j = 0; j <= slotMachineWidth - 3; j++)
             {
                 string slotName = slotMachineGrid[i, j].name;
-                bool diagonalWin = true;
+                int winLength = 1;
 
-                for (int k = 0; k < 3; k++)
+                while (i - winLength >= 0 &&
+                       j + winLength < slotMachineWidth &&
+                       slotMachineGrid[i - winLength, j + winLength].name == slotName)
                 {
-                    if (slotMachineGrid[i - k, j + k].name != slotName)
-                    {
-                        diagonalWin = false;
-                        break;
-                    }
+                    winLength++;
                 }
 
-                if (diagonalWin)
+                if (winLength >= 3)
                 {
-                    currentSpinWinnings += 100;
-                    DrawUILineFromSlots(slotMachineGrid[i, j], slotMachineGrid[i - 2, j + 2]);
+                    currentSpinWinnings += GetLinePayout(winLength) * 3;
+                    DrawUILineFromSlots(slotMachineGrid[i, j], slotMachineGrid[i - winLength + 1, j + winLength - 1]);
                     win = true;
                 }
             }
@@ -319,7 +313,7 @@ public class SlotsManager : MonoBehaviour
             if (iconPoints.Count == slotMachineWidth)
             {
                 DrawUILineFromSlots(iconPoints[0], iconPoints[iconPoints.Count - 1]);
-                currentSpinWinnings += slotMachineWidth * 10;
+                currentSpinWinnings += slotMachineWidth * 1000;
                 win = true;
             }
 
@@ -334,48 +328,43 @@ public class SlotsManager : MonoBehaviour
             slotWinAudio.Play();
 
         winsText.text = currentSpinWinnings > 0 ? $"{currentSpinWinnings}" : "Loss";
-    }
 
-    private void DrawUILine(Vector3 start, Vector3 end)
+
+    }
+    private int GetLinePayout(int winLength)
     {
-        // Convert world to UI space
-        Vector2 startPos, endPos;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotGrid, Camera.main.WorldToScreenPoint(start), null, out startPos);
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(slotGrid, Camera.main.WorldToScreenPoint(end), null, out endPos);
-
-        Vector2 direction = (endPos - startPos).normalized;
-        float distance = Vector2.Distance(startPos, endPos);
-
-        GameObject lineGO = Instantiate(winLinePrefab, slotGrid);
-        RectTransform rt = lineGO.GetComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(distance, 8); // Width = length of line, height = thickness
-        rt.anchoredPosition = startPos;
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        rt.rotation = Quaternion.Euler(0, 0, angle);
-
-        slotMachineMatchLines.Add(lineGO);
+        if (slotMachineHeight <= 1)
+            return winLength * 100;
+        switch (winLength)
+        {
+            case 3: return 30;
+            case 4: return 60;
+            case 5: return 100;
+            case 6: return 1000;
+            default:
+                return 10 * (winLength - 2);
+        }
     }
 
-    // Modified version that uses RectTransform positions directly
+    // Drawas a UI line between two slot objects
     private void DrawUILineFromSlots(GameObject startSlot, GameObject endSlot)
     {
-        // First, make sure we're getting the parent slot containers
+        // Try to use the parent container of each slot if it exists 
         GameObject startContainer = startSlot.transform.parent ? startSlot.transform.parent.gameObject : startSlot;
         GameObject endContainer = endSlot.transform.parent ? endSlot.transform.parent.gameObject : endSlot;
-        
-        // Log for debugging
+
         Debug.Log($"Drawing line from {startContainer.name} to {endContainer.name}");
-        
-        // Convert world positions to screen positions
+
+        // Get world-space positions of both containers
         Vector3 startWorldPos = startContainer.transform.position;
         Vector3 endWorldPos = endContainer.transform.position;
         
-        // Convert screen positions to canvas local positions
+        // Used to convert world-space positions to local canvas positions
         Vector2 startCanvasPos, endCanvasPos;
-        
         Canvas canvas = slotGrid.GetComponentInParent<Canvas>();
         Camera canvasCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
         
+        // Convert world position -> screen point -> local canvas position
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             slotGrid, 
             RectTransformUtility.WorldToScreenPoint(canvasCamera, startWorldPos), 
@@ -388,23 +377,21 @@ public class SlotsManager : MonoBehaviour
             canvasCamera, 
             out endCanvasPos);
         
-        // Log positions for debugging
         Debug.Log($"Start Canvas Pos: {startCanvasPos}, End Canvas Pos: {endCanvasPos}");
         
+        // Measure distance and direction between two points
         float distance = Vector2.Distance(startCanvasPos, endCanvasPos);
         Vector2 direction = (endCanvasPos - startCanvasPos).normalized;
         Vector2 midpoint = startCanvasPos + (endCanvasPos - startCanvasPos) * 0.5f;
         
-        // Instantiate the line
         GameObject lineGO = Instantiate(winLinePrefab, slotGrid);
         RectTransform rt = lineGO.GetComponent<RectTransform>();
         
-        // Make sure line is visible
         Image lineImage = lineGO.GetComponent<Image>();
         if (lineImage == null)
         {
             lineImage = lineGO.AddComponent<Image>();
-            lineImage.color = Color.red; // Default color if material not set
+            lineImage.color = Color.red; // fallback color
         }
         
         if (winLineMaterial != null)
@@ -416,13 +403,14 @@ public class SlotsManager : MonoBehaviour
         rt.anchorMin = new Vector2(0.5f, 0.5f);
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(distance, 16); // Width = distance, Height = thickness
+        rt.sizeDelta = new Vector2(distance, 16); // width = distance between slots, height = line thickness
         rt.anchoredPosition = midpoint;
         
+        // Calculate the angle and apply it to the line
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         rt.localRotation = Quaternion.Euler(0, 0, angle);
         
-        // Ensure it's visible (in front)
+        // Makes sure line renders on top
         Canvas.ForceUpdateCanvases();
         rt.SetAsLastSibling();
         

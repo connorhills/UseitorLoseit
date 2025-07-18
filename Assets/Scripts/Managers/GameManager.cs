@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
 
     public double BaseChipsPerClick()
     {
-        double total = 1;
+        double total = 10;
         for (int i = 0; i < data.clickUpgradeLevel.Count; i++)
         {
             total *= (data.clickUpgradeLevel[i] > 0) ? Math.Pow(2, data.clickUpgradeLevel[i]) : 1;

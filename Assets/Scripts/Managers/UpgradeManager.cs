@@ -349,8 +349,13 @@ public class UpgradeManager : MonoBehaviour
                 QuickBuyUpgrade(GameManager.instance.data.clickMultMaxUpgradeLevel, clickMultMaxUpgrades);
                 break;
             case "autoGen":
-                QuickBuyUpgrade(GameManager.instance.data.autoGenUpgradeLevel, autoGenUpgrades);
-                break;
+                if(data.chips >= UpgradeCost(type, upgradeID))
+                {
+                    data.chips -= UpgradeCost(type, upgradeID);
+                    data.autoGenUpgradeLevel[upgradeID]++;
+                    UpdateUpgradeUI(type, upgradeID);
+                }
+                return;
         }
 
         void QuickBuyUpgrade(List<int> level, List<Upgrades> upgrade)

@@ -12,6 +12,9 @@ public class Data
     public List<int> critBonusUpgradeLevel;
     public List<int> clickMultMinUpgradeLevel;
     public List<int> clickMultMaxUpgradeLevel;
+
+    public List<int> slotWidthUpgradeLevel;
+    public List<int> slotHeightUpgradeLevel;
     
     public Data()
     {
@@ -23,5 +26,8 @@ public class Data
         critBonusUpgradeLevel = new int[10].ToList();
         clickMultMinUpgradeLevel = new int[5].ToList();
         clickMultMaxUpgradeLevel = new int[6].ToList();
+
+        slotWidthUpgradeLevel = new int[5].ToList();
+        slotHeightUpgradeLevel = new int[6].ToList();
     }
 }

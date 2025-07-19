@@ -7,22 +7,32 @@ using UnityEngine.UI;
 
 public class SlotsManager : MonoBehaviour
 {
-    [Range(1, 20)]public int slotMachineHeight;
-    [Range(1, 25)]public int slotMachineWidth;
+    private int slotMachineHeight;
+    private int slotMachineWidth;
+
+    [SerializeField] private int baseSlotWidth = 3;
+    [SerializeField] private int baseSlotHeight = 1;
 
     [Header("Grid Layout")]
-    [SerializeField] private float slotCellSize = 175f;    // Size of each slot
+    [SerializeField] private float baseSlotSize = 200f;    // Size of each slot
     [SerializeField] private float slotPadding = 0f;       // Space between slots
     [SerializeField] private Vector2 slotOffset = Vector2.zero;
     [Range(0.5f, 2f)]
-    [SerializeField] private float gridScale = 1f;
+    [SerializeField] private float slotGridScale = 1f;
 
-    [Header("UI Variables")]
+    [Header("Cell Auto-Sizing Settings")]
+    [SerializeField] private float maxSlotGridWidth = 1300f;
+    [SerializeField] private float maxSlotGridHeight = 900f;
+    [SerializeField] private float minSlotSize = 50f;
+
+    [Header("UI Elements")]
     [SerializeField] private GameObject slot;
     [SerializeField] private GameObject[] slotIcons;
     [SerializeField] private GameObject slotMachinePanel;
     [SerializeField] private Button playSlotsButton;
     [SerializeField] private Button quitSlotsButton;
+    [SerializeField] private Button increaseBetButton;
+    [SerializeField] private Button decreaseBetButton;
     [SerializeField] private Material winLineMaterial;
     [SerializeField] private GameObject winLinePrefab;
     [SerializeField] private TMP_Text winsText;
@@ -30,31 +40,141 @@ public class SlotsManager : MonoBehaviour
     [SerializeField] private GameObject slotMachine;
     [SerializeField] private RectTransform slotGrid;
     [SerializeField] private double slotCost = 100.0;
+    [SerializeField] private TMP_Text slotCostText;
 
     private GameObject[,] slotMachineGrid;
     private List<GameObject> slotMachineMatchLines;
     private AudioSource slotWinAudio;
 
+    private Coroutine increaseBetButtonAnimCoroutine;
+    private Coroutine decreaseBetButtonAnimCoroutine;
+
+    private Color originalIncreaseBetButtonColor;
+    private Color originalDecreaseBetButtonColor;
+
     private void Start()
     {
+        UpdateGridDimensions();
+
         slotMachineGrid = new GameObject[slotMachineHeight, slotMachineWidth];
         slotMachineMatchLines = new List<GameObject>();
         slotWinAudio = GetComponent<AudioSource>();
+        slotCostText.text = slotCost.ToString();
+
+        if (increaseBetButton != null)
+            originalIncreaseBetButtonColor = increaseBetButton.GetComponent<Image>().color;
+        if (decreaseBetButton != null)
+            originalDecreaseBetButtonColor = decreaseBetButton.GetComponent<Image>().color;
 
         InitializeSlotMachineGrid();
+    }
 
-        if (slotMachinePanel != null)
-            playSlotsButton.onClick.AddListener(OpenSlots);
-        if (quitSlotsButton != null)
-            quitSlotsButton.onClick.AddListener(QuitSlots);
+    private void UpdateGridDimensions()
+    {
+        var data = GameManager.instance.data;
+
+        slotMachineWidth = baseSlotWidth;
+        slotMachineHeight = baseSlotHeight;
+
+        for (int i = 0; i < data.slotWidthUpgradeLevel.Count; i++)
+        {
+            if (data.slotWidthUpgradeLevel[i] > 0)
+                slotMachineWidth += 1;
+        }
+
+        for (int i = 0; i < data.slotHeightUpgradeLevel.Count; i++)
+        {
+            if (data.slotHeightUpgradeLevel[i] > 0)
+                slotMachineHeight += 1;
+        }
+
+        Debug.Log($"Updated grid dimensions to: {slotMachineWidth}x{slotMachineHeight}");
 
     }
 
+    private float CalculateOptimalSlotSize()
+    {
+        // Calculates what slotSize fits in maximum dimensions
+        float maxSlotSizeWidth = (maxSlotGridWidth - ((slotMachineWidth - 1) * slotPadding)) / slotMachineWidth;
+        float maxSlotSizeHeight = (maxSlotGridHeight - ((slotMachineHeight - 1) * slotPadding)) / slotMachineHeight;
+
+        float optimalSlotSize = Mathf.Min(maxSlotSizeWidth, maxSlotSizeHeight);
+
+        optimalSlotSize *= slotGridScale;
+
+        optimalSlotSize = Mathf.Max(optimalSlotSize, minSlotSize);
+
+        if (slotMachineWidth <= 3 && slotMachineHeight <= 1)
+        {
+            float baseSize = baseSlotSize * slotGridScale;
+            if (baseSize <= maxSlotSizeWidth && baseSize <= maxSlotSizeHeight)
+            {
+                optimalSlotSize = baseSize;
+            }
+        }
+
+        Debug.Log($"Optimal cell size: {optimalSlotSize} for grid {slotMachineWidth}x{slotMachineHeight}");
+        return optimalSlotSize;
+    }
+
+    public void UpgradeGridDimensions()
+    {
+        Debug.Log("Starting grid upgrade process...");
+
+        ClearCurrentGrid();
+
+        UpdateGridDimensions();
+
+        slotMachineGrid = new GameObject[slotMachineHeight, slotMachineWidth];
+
+        InitializeSlotMachineGrid();
+
+        Debug.Log($"Grid successfully upgraded to: {slotMachineWidth}x{slotMachineHeight}");
+    }
+
+
+    private void ClearCurrentGrid()
+    {
+        foreach (GameObject line in slotMachineMatchLines)
+        {
+            if (line != null)
+                DestroyImmediate(line);
+        }
+        slotMachineMatchLines.Clear();
+
+        if (slotMachineGrid != null)
+        {
+            for (int i = 0; i < slotMachineGrid.GetLength(0); i++)
+            {
+                for (int j = 0; j < slotMachineGrid.GetLength(1); j++)
+                {
+                    if (slotMachineGrid[i, j] != null)
+                    {
+                        DestroyImmediate(slotMachineGrid[i, j]);
+                    }
+                }
+            }
+        }
+
+        Transform[] children = new Transform[slotMachine.transform.childCount];
+        for (int i = 0; i < children.Length; i++)
+        {
+            children[i] = slotMachine.transform.GetChild(i);
+        }
+
+        foreach (Transform child in children)
+        {
+            if(child.name.Contains(" "))
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+    }
     private void InitializeSlotMachineGrid()
     {
         // Calculate real cell and padding sizes after scaling
-        float cellSize = slotCellSize * gridScale;
-        float cellPadding = slotPadding * gridScale;
+        float cellSize = CalculateOptimalSlotSize();
+        float cellPadding = slotPadding * slotGridScale;
         
         // The distance from the center of one cell to the center of the next
         float cellSpacing = cellSize + cellPadding;
@@ -161,6 +281,29 @@ public class SlotsManager : MonoBehaviour
 
     }
 
+    public void IncreaseBet()
+    {
+        slotCost += 100;
+        Debug.Log($"Slot Cost: {slotCost}");
+        slotCostText.text = slotCost.ToString();
+
+        if (increaseBetButtonAnimCoroutine != null)
+            StopCoroutine(increaseBetButtonAnimCoroutine);
+        increaseBetButtonAnimCoroutine = StartCoroutine(AnimateButton(increaseBetButton, originalIncreaseBetButtonColor));
+    }
+
+    public void DecreaseBet()
+    {
+        if (slotCost - 100 == 0) return;
+        slotCost -= 100;
+        Debug.Log($"Slot Cost: {slotCost}");
+        slotCostText.text = slotCost.ToString();
+
+        if (decreaseBetButtonAnimCoroutine != null)
+            StopCoroutine(decreaseBetButtonAnimCoroutine);
+        decreaseBetButtonAnimCoroutine = StartCoroutine(AnimateButton(decreaseBetButton, originalDecreaseBetButtonColor));
+    }
+
     void CheckForWin()
     {
         bool win = false;
@@ -183,7 +326,7 @@ public class SlotsManager : MonoBehaviour
                     if (winLength >= 3)
                     {
                         winEnd = slotMachineGrid[j, i];
-                        currentSpinWinnings += GetLinePayout(winLength);
+                        currentSpinWinnings += GetLinePayout(winLength) * GetBetMultiplier();
                         DrawUILineFromSlots(winStart, winEnd);
                         win = true;
                     }
@@ -194,7 +337,7 @@ public class SlotsManager : MonoBehaviour
             if (winLength >= 3)
             {
                 winEnd = slotMachineGrid[slotMachineHeight - 1, i];
-                currentSpinWinnings += GetLinePayout(winLength);
+                currentSpinWinnings += GetLinePayout(winLength) * GetBetMultiplier();
                 DrawUILineFromSlots(winStart, winEnd);
                 win = true;
             }
@@ -217,7 +360,7 @@ public class SlotsManager : MonoBehaviour
                     if(winLength >= 3)
                     {
                         winEnd = slotMachineGrid[i, j];
-                        currentSpinWinnings += GetLinePayout(winLength);
+                        currentSpinWinnings += GetLinePayout(winLength) * GetBetMultiplier();
                         DrawUILineFromSlots(winStart, winEnd);
                         win = true;
                     }
@@ -228,7 +371,7 @@ public class SlotsManager : MonoBehaviour
             if (winLength >= 3)
             {
                 winEnd = slotMachineGrid[i, slotMachineWidth - 1];
-                currentSpinWinnings += GetLinePayout(winLength);
+                currentSpinWinnings += GetLinePayout(winLength) * GetBetMultiplier();
                 DrawUILineFromSlots(winStart, winEnd);
                 win = true;
             }
@@ -251,7 +394,7 @@ public class SlotsManager : MonoBehaviour
 
                 if (winLength >= 3)
                 {
-                    currentSpinWinnings += GetLinePayout(winLength) * 3;
+                    currentSpinWinnings += GetLinePayout(winLength) * 2 * GetBetMultiplier();
                     DrawUILineFromSlots(slotMachineGrid[i, j], slotMachineGrid[i + winLength - 1, j + winLength - 1]);
                     win = true;
                 }
@@ -275,7 +418,7 @@ public class SlotsManager : MonoBehaviour
 
                 if (winLength >= 3)
                 {
-                    currentSpinWinnings += GetLinePayout(winLength) * 3;
+                    currentSpinWinnings += GetLinePayout(winLength) * 2 * GetBetMultiplier();
                     DrawUILineFromSlots(slotMachineGrid[i, j], slotMachineGrid[i - winLength + 1, j + winLength - 1]);
                     win = true;
                 }
@@ -313,7 +456,7 @@ public class SlotsManager : MonoBehaviour
             if (iconPoints.Count == slotMachineWidth)
             {
                 DrawUILineFromSlots(iconPoints[0], iconPoints[iconPoints.Count - 1]);
-                currentSpinWinnings += slotMachineWidth * 1000;
+                currentSpinWinnings += slotMachineWidth * 1000 * GetBetMultiplier();
                 win = true;
             }
 
@@ -331,16 +474,21 @@ public class SlotsManager : MonoBehaviour
 
 
     }
+
+    private double GetBetMultiplier()
+    {
+        return slotCost / 100;
+    }
     private int GetLinePayout(int winLength)
     {
         if (slotMachineHeight <= 1)
             return winLength * 100;
         switch (winLength)
         {
-            case 3: return 30;
-            case 4: return 60;
-            case 5: return 100;
-            case 6: return 1000;
+            case 3: return 50;
+            case 4: return 100;
+            case 5: return 500;
+            case 6: return 2500;
             default:
                 return 10 * (winLength - 2);
         }
@@ -399,7 +547,6 @@ public class SlotsManager : MonoBehaviour
             lineImage.material = winLineMaterial;
         }
         
-        // Set line properties
         rt.anchorMin = new Vector2(0.5f, 0.5f);
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot = new Vector2(0.5f, 0.5f);
@@ -417,5 +564,40 @@ public class SlotsManager : MonoBehaviour
         slotMachineMatchLines.Add(lineGO);
         
         Debug.Log($"Line created with size: {rt.sizeDelta}, position: {rt.anchoredPosition}, angle: {angle}");
+    }
+
+    private IEnumerator AnimateButton(Button button, Color originalColor)
+    {
+        RectTransform rt = button.GetComponent<RectTransform>();
+        Image buttonImage = button.GetComponent<Image>();
+        Color flashColor = LightenColor(originalColor, 0.3f);
+
+        float duration = 0.2f;
+        float elapsed = 0f;
+        float scaleMultiplier = 1.1f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float time = elapsed / duration;
+
+            // Scale Button
+            float scale = Mathf.Lerp(1f, scaleMultiplier, Mathf.Sin(time * Mathf.PI));
+            rt.localScale = new Vector3(scale, scale, 1f);
+
+            // Lighten Button
+            buttonImage.color = Color.Lerp(originalColor, flashColor, Mathf.Sin(time * Mathf.PI));
+
+            yield return null;
+        }
+
+        rt.localScale = Vector3.one;
+        buttonImage.color = originalColor;
+    }
+
+    private Color LightenColor(Color color, float amount)
+    {
+        // Lightens given color toward white based on amount
+        return Color.Lerp(color, Color.white, amount);
     }
 }

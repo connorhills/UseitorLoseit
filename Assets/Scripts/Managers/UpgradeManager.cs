@@ -76,6 +76,26 @@ public class UpgradeManager : MonoBehaviour
     public double[] clickMultMaxUpgradeBasePow;
     public double[] clickMultMaxUpgradeUnlockVal;
 
+    [Header("Slot Width Upgrade Data")]
+    public List<Upgrades> slotWidthUpgrades;
+    public Upgrades[] slotWidthUpgradePrefabs;
+
+    public bool[] slotWidthUpgradeIsUnlocked;
+
+    public string[] slotWidthUpgradeNames;
+    public double[] slotWidthUpgradeBaseCost;
+    public double[] slotWidthUpgradeUnlockVal;
+
+    [Header("Slot Height Upgrade Data")]
+    public List<Upgrades> slotHeightUpgrades;
+    public Upgrades[] slotHeightUpgradePrefabs;
+
+    public bool[] slotHeightUpgradeIsUnlocked;
+
+    public string[] slotHeightUpgradeNames;
+    public double[] slotHeightUpgradeBaseCost;
+    public double[] slotHeightUpgradeUnlockVal;
+
     [Header("Auto Gen Upgrade Data")]
     public List<Upgrades> autoGenUpgrades;
     public Upgrades[] autoGenUpgradePrefab;
@@ -94,6 +114,8 @@ public class UpgradeManager : MonoBehaviour
         MethodManager.UpgradeCheck(GameManager.instance.data.critBonusUpgradeLevel, 10);
         MethodManager.UpgradeCheck(GameManager.instance.data.clickMultMinUpgradeLevel, 5);
         MethodManager.UpgradeCheck(GameManager.instance.data.clickMultMaxUpgradeLevel, 6);
+        MethodManager.UpgradeCheck(GameManager.instance.data.slotWidthUpgradeLevel, 5);
+        MethodManager.UpgradeCheck(GameManager.instance.data.slotHeightUpgradeLevel, 6);
 
         /* Click Upgrades */
 
@@ -166,6 +188,28 @@ public class UpgradeManager : MonoBehaviour
             clickMultMaxUpgradeNames[i] = $"+{clickMultMaxUpgradeBasePow[i]}x";
         }
 
+        /* Slot Width Upgrades */
+        slotWidthUpgradeBaseCost = new double[] { 1000, 5000, 25000, 100000, 500000 };
+        slotWidthUpgradeUnlockVal = new double[] { 0, 1000, 5000, 25000, 100000 };
+        slotWidthUpgradeIsUnlocked = new bool[slotWidthUpgradeBaseCost.Length];
+
+        slotWidthUpgradeNames = new string[slotWidthUpgradeBaseCost.Length];
+        for (int i = 0; i < slotWidthUpgradeNames.Length; i++)
+        {
+            slotWidthUpgradeNames[i] = $"+1";
+        }
+
+        /* Slot Height Upgrades */
+        slotHeightUpgradeBaseCost = new double[] { 2000, 10000, 30000, 125000, 450000, 675000 };
+        slotHeightUpgradeUnlockVal = new double[] { 0, 2000, 10000, 30000, 125000, 450000 };
+        slotHeightUpgradeIsUnlocked = new bool[slotHeightUpgradeBaseCost.Length];
+
+        slotHeightUpgradeNames = new string[slotHeightUpgradeBaseCost.Length];
+        for (int i = 0; i < slotWidthUpgradeNames.Length; i++)
+        {
+            slotHeightUpgradeNames[i] = $"+1";
+        }
+
         /* AutoGen Upgrades */
 
         autoGenUpgradeBasePow = new double[] { 1, 5, 10, 20, 35, 50, 100, 250, 400, 1000, 5000, 10000 };
@@ -182,10 +226,12 @@ public class UpgradeManager : MonoBehaviour
         /* Instantiate Upgrade Prefabs */
 
         InstantiateUpgrades(GameManager.instance.data.clickUpgradeLevel, clickUpgradePrefabs, upgradePanel, clickUpgrades);
-        InstantiateUpgrades(GameManager.instance.data.critChanceUpgradeLevel, critChanceUpgradePrefabs, upgradePanel, critChanceUpgrades);
-        InstantiateUpgrades(GameManager.instance.data.critBonusUpgradeLevel, critBonusUpgradePrefabs, upgradePanel, critBonusUpgrades);
         InstantiateUpgrades(GameManager.instance.data.clickMultMinUpgradeLevel, clickMultMinUpgradePrefabs, upgradePanel, clickMultMinUpgrades);
         InstantiateUpgrades(GameManager.instance.data.clickMultMaxUpgradeLevel, clickMultMaxUpgradePrefabs, upgradePanel, clickMultMaxUpgrades);
+        InstantiateUpgrades(GameManager.instance.data.critChanceUpgradeLevel, critChanceUpgradePrefabs, upgradePanel, critChanceUpgrades);
+        InstantiateUpgrades(GameManager.instance.data.critBonusUpgradeLevel, critBonusUpgradePrefabs, upgradePanel, critBonusUpgrades);
+        InstantiateUpgrades(GameManager.instance.data.slotWidthUpgradeLevel, slotWidthUpgradePrefabs, upgradePanel, slotWidthUpgrades);
+        InstantiateUpgrades(GameManager.instance.data.slotHeightUpgradeLevel, slotHeightUpgradePrefabs, upgradePanel, slotHeightUpgrades);
 
         for (int i = 0; i < GameManager.instance.data.autoGenUpgradeLevel.Count; i++)
         {
@@ -202,6 +248,8 @@ public class UpgradeManager : MonoBehaviour
         UpdateUpgradeUI("critBonus");
         UpdateUpgradeUI("clickMultMin");
         UpdateUpgradeUI("clickMultMax");
+        UpdateUpgradeUI("slotWidth");
+        UpdateUpgradeUI("slotHeight");
         UpdateUpgradeUI("autoGen");
 
         void InstantiateUpgrades(List<int> level, Upgrades[] upgradePrefab, Transform uPanel, List<Upgrades> upgrades)
@@ -223,6 +271,8 @@ public class UpgradeManager : MonoBehaviour
         UnlockedUpgrades(critBonusUpgrades, critBonusUpgradeIsUnlocked, critBonusUpgradeUnlockVal, GameManager.instance.data.critBonusUpgradeLevel);
         UnlockedUpgrades(clickMultMinUpgrades, clickMultMinUpgradeIsUnlocked, clickMultMinUpgradeUnlockVal, GameManager.instance.data.clickMultMinUpgradeLevel);
         UnlockedUpgrades(clickMultMaxUpgrades, clickMultMaxUpgradeIsUnlocked, clickMultMaxUpgradeUnlockVal, GameManager.instance.data.clickMultMaxUpgradeLevel);
+        UnlockedUpgrades(slotWidthUpgrades, slotWidthUpgradeIsUnlocked, slotWidthUpgradeUnlockVal, GameManager.instance.data.slotWidthUpgradeLevel);
+        UnlockedUpgrades(slotHeightUpgrades, slotHeightUpgradeIsUnlocked, slotHeightUpgradeUnlockVal, GameManager.instance.data.slotHeightUpgradeLevel);
 
         for (var i = 0; i < autoGenUpgrades.Count; i++)
         {
@@ -271,6 +321,14 @@ public class UpgradeManager : MonoBehaviour
                 QuickUpdateUI(clickMultMaxUpgrades, GameManager.instance.data.clickMultMaxUpgradeLevel, clickMultMaxUpgradeNames);
                 break;
 
+            case "slotWidth":
+                QuickUpdateUI(slotWidthUpgrades, GameManager.instance.data.slotWidthUpgradeLevel, slotWidthUpgradeNames);
+                break;
+
+            case "slotHeight":
+                QuickUpdateUI(slotHeightUpgrades, GameManager.instance.data.slotHeightUpgradeLevel, slotHeightUpgradeNames);
+                break;
+
             case "autoGen":
                 QuickUpdateUI(autoGenUpgrades, GameManager.instance.data.autoGenUpgradeLevel, autoGenUpgradeNames);
                 break;
@@ -316,6 +374,10 @@ public class UpgradeManager : MonoBehaviour
                 return clickMultMinUpgradeBaseCost[upgradeID];
             case "clickMultMax":
                 return clickMultMaxUpgradeBaseCost[upgradeID];
+            case "slotWidth":
+                return slotWidthUpgradeBaseCost[upgradeID];
+            case "slotHeight":
+                return slotHeightUpgradeBaseCost[upgradeID];
             case "autoGen":
                 return autoGenUpgradeBaseCost[upgradeID]
                 * Math.Pow(autoGenUpgradeCostMult[upgradeID], (double)data.autoGenUpgradeLevel[upgradeID]);
@@ -347,6 +409,14 @@ public class UpgradeManager : MonoBehaviour
                 break;
             case "clickMultMax":
                 QuickBuyUpgrade(GameManager.instance.data.clickMultMaxUpgradeLevel, clickMultMaxUpgrades);
+                break;
+            case "slotWidth":
+                QuickBuyUpgrade(GameManager.instance.data.slotWidthUpgradeLevel, slotWidthUpgrades);
+                FindObjectOfType<SlotsManager>().UpgradeGridDimensions();
+                break;
+            case "slotHeight":
+                QuickBuyUpgrade(GameManager.instance.data.slotHeightUpgradeLevel, slotHeightUpgrades);
+                FindObjectOfType<SlotsManager>().UpgradeGridDimensions();
                 break;
             case "autoGen":
                 if(data.chips >= UpgradeCost(type, upgradeID))

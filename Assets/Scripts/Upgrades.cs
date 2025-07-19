@@ -20,6 +20,8 @@ public class Upgrades : MonoBehaviour
     public void BuyCriticalBonusUpgrade() => UpgradeManager.instance.BuyUpgrade("critBonus", upgradeID);
     public void BuyClickMultMinUpgrade() => UpgradeManager.instance.BuyUpgrade("clickMultMin", upgradeID);
     public void BuyClickMultMaxUpgrade() => UpgradeManager.instance.BuyUpgrade("clickMultMax", upgradeID);
+    public void BuySlotWidthUpgrade() => UpgradeManager.instance.BuyUpgrade("slotWidth", upgradeID);
+    public void BuySlotHeightUpgrade() => UpgradeManager.instance.BuyUpgrade("slotHeight", upgradeID);
 
     
 }
